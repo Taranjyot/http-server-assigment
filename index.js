@@ -30,19 +30,6 @@ const requestHandler = (req, res) => {
         }
     }
 
-
-
-/*
-    if (req.url == '/add' && req.method === 'GET' ) {
-        res.writeHead(200, { 'Content-Type': 'application/json'})
-        res.end(JSON.stringify({message: 'Nodejs'}))
-    } else {
-        res.writeHead(404, {'Content-Type': 'application/json'})
-        res.end(JSON.stringify({message: 'NOT found'}))
-    }
-
-
- */
 }
 
 
@@ -65,7 +52,7 @@ const APIRequest = (req, res, data) => {
             } catch (exp) {
                 res.writeHead(400, contentType);
                 res.end(JSON.stringify({
-                    'error': 'invalid Arguments, make sure the body is correct.'
+                    'result': '400: invalid Arguments, make sure the body is correct.'
                 }))
                 return;
             }
@@ -73,7 +60,7 @@ const APIRequest = (req, res, data) => {
             if(splittarr.length !=0) {
                 res.writeHead(404, contentType);
                 res.end(JSON.stringify({
-                    'error': 'API endpoint not found.'
+                    'result': '404: API endpoint not found.'
                 }))
                 return;
             }
@@ -81,7 +68,7 @@ const APIRequest = (req, res, data) => {
             if (data['operation'] == undefined || data['arguments'] == undefined || data['arguments'].length !=2) {
                 res.writeHead(400, contentType);
                 res.end(JSON.stringify({
-                    'error': 'invalid Arguments, make sure the body is correct.'
+                    'result': '400: invalid Arguments, make sure the body is correct.'
                 }))
                 return;
             }
@@ -95,7 +82,7 @@ const APIRequest = (req, res, data) => {
             contentType = { 'Content-Type': 'application/json'}
             res.writeHead(405, contentType);
             res.end(JSON.stringify({
-                'error': res.statusCode  + ' :' + res.statusMessage
+                'result': res.statusCode  + ' :' + res.statusMessage
             }))
             break;
         }
@@ -112,7 +99,7 @@ const APIRequest = (req, res, data) => {
         var value;
         if(isNaN(a) || isNaN(b)) {
             res.writeHead(400,contentType)
-            value  = 'invalid Arguments, make sure the values and API end point is correct.'
+            value  = '400: invalid Arguments, make sure the values and API end point is correct.'
 
         } else {
 
@@ -130,7 +117,7 @@ const APIRequest = (req, res, data) => {
                     value = a / b
                 } else {
                     res.writeHead(400, contentType)
-                    value = 'Invalid Math Operation. Cannot divide number by 0.'
+                    value = '400: Invalid Math Operation. Cannot divide number by 0.'
                 }
                 break;
             }
@@ -141,7 +128,7 @@ const APIRequest = (req, res, data) => {
             }
             default: {
                 res.writeHead(400, contentType)
-                value = 'Invalid Math Operation. Available operations are [ add, multiply, divide, subtract].'
+                value = '400: Invalid Math Operation. Available operations are [ add, multiply, divide, subtract].'
             }
         }
 
@@ -151,8 +138,8 @@ const APIRequest = (req, res, data) => {
             res.end(JSON.stringify({result: value}))
             return;
         } else if(req.method == 'GET') {
-            var response = 'HTTP/1.1 ' + res.statusCode +' ' + res.statusMessage +'\n' + contentTypeText + '\n' + '\n';
-            res.end(response + value +'')
+            //var response = 'HTTP/1.1 ' + res.statusCode +' ' + res.statusMessage +'\n' + contentTypeText + '\n' + '\n';
+            res.end('' + value +'')
             return;
         }
 
@@ -164,7 +151,8 @@ const APIRequest = (req, res, data) => {
         res.writeHead(400,contentType)
 
         res.statusCode = 400
-        res.end('HTTP/1.1 ' + res.statusCode + ' ' + res.statusMessage + '\n' + contentTypeText + '\n\nInvalid URL')
+        //res.end('HTTP/1.1 ' + res.statusCode + ' ' + res.statusMessage + '\n' + contentTypeText + '\n\n400: Invalid URL')
+        res.end('400: Invalid URL')
         return
     }
 
