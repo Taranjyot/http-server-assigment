@@ -26,7 +26,7 @@ const requestHandler = (req, res) => {
             break;
         }
         default : {
-
+            APIRequest(req, res,'{}')
         }
     }
 
@@ -49,23 +49,39 @@ const requestHandler = (req, res) => {
 
 const APIRequest = (req, res, data) => {
     var contentType, contentTypeText, splittarr ;
+    var url_parts = url.parse(req.url, true)
+    var query = url_parts.pathname
+    splittarr = query.split('/')
+    splittarr =  splittarr.filter(e =>  e)
     switch (req.method) {
         case 'GET' : {
             contentType = {'Content-Type': 'text/plain'}
             contentTypeText = 'Content-Type: text/plain'
-            var url_parts = url.parse(req.url, true)
-            var query = url_parts.pathname
-            var splittarr = query.split('/')
-            splittarr =  splittarr.filter(e =>  e)
             break;
         }
         case 'POST': {
-            data = JSON.parse(data)
-            contentType = { 'Content-Type': 'application/json'}
-            if (data['operation'] == undefined || data['arguments'] == undefined) {
+            try {
+                data = JSON.parse(data)
+            } catch (exp) {
                 res.writeHead(400, contentType);
                 res.end(JSON.stringify({
-                    'error': 'invalid Arguments'
+                    'error': 'invalid Arguments, make sure the body is correct.'
+                }))
+                return;
+            }
+            contentType = { 'Content-Type': 'application/json'}
+            if(splittarr.length !=0) {
+                res.writeHead(404, contentType);
+                res.end(JSON.stringify({
+                    'error': 'API endpoint not found.'
+                }))
+                return;
+            }
+
+            if (data['operation'] == undefined || data['arguments'] == undefined || data['arguments'].length !=2) {
+                res.writeHead(400, contentType);
+                res.end(JSON.stringify({
+                    'error': 'invalid Arguments, make sure the body is correct.'
                 }))
                 return;
             }
@@ -76,6 +92,11 @@ const APIRequest = (req, res, data) => {
             break;
         }
         default: {
+            contentType = { 'Content-Type': 'application/json'}
+            res.writeHead(405, contentType);
+            res.end(JSON.stringify({
+                'error': res.statusCode  + ' :' + res.statusMessage
+            }))
             break;
         }
 
@@ -88,35 +109,41 @@ const APIRequest = (req, res, data) => {
         var a = parseInt(splittarr[1])
         var b = parseInt(splittarr[2])
         res.writeHead(200, contentType)
-        var response = 'HTTP/1.1 ' + res.statusCode +' ' + res.statusMessage +'\n' + contentTypeText + '\n' + '\n';
         var value;
+        if(isNaN(a) || isNaN(b)) {
+            res.writeHead(400,contentType)
+            value  = 'invalid Arguments, make sure the values and API end point is correct.'
+
+        } else {
+
         switch (splittarr[0]) {
             case 'add' : {
                 value = (a + b)
                 break;
             }
-            case 'multiply':{
-                value = a*b
+            case 'multiply': {
+                value = a * b
                 break;
             }
             case 'divide': {
-                try {
-                    value = a/b
-                    break;
-                } catch (exp) {
-                    console.log(exp)
+                if(b != 0) {
+                    value = a / b
+                } else {
+                    res.writeHead(400, contentType)
+                    value = 'Invalid Math Operation. Cannot divide number by 0.'
                 }
                 break;
             }
             case 'subtract': {
-                value = a-b;
+                value = a - b;
                 console.log(value)
                 break;
             }
             default: {
-                res.writeHead(400,contentType)
-                value  = 'Invalid Math Operation. Available operations are [ add, multiply, divide, subtract].'
+                res.writeHead(400, contentType)
+                value = 'Invalid Math Operation. Available operations are [ add, multiply, divide, subtract].'
             }
+        }
 
         }
 
@@ -124,6 +151,7 @@ const APIRequest = (req, res, data) => {
             res.end(JSON.stringify({result: value}))
             return;
         } else if(req.method == 'GET') {
+            var response = 'HTTP/1.1 ' + res.statusCode +' ' + res.statusMessage +'\n' + contentTypeText + '\n' + '\n';
             res.end(response + value +'')
             return;
         }
